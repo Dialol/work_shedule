@@ -1,0 +1,49 @@
+{% include 'sheduler/head.html' %}
+{% include 'sheduler/navbar.html' %}
+{% load sheduler_extras %}
+
+<h2 class="mb-4">Желаемые выходные</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="card mb-4">
+        <div class="card-header">
+            Укажите желаемые выходные дни на следующую неделю: {{ start_of_week|date:"d.m.Y" }} - {{ end_of_week|date:"d.m.Y" }}
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Сотрудник</th>
+                        {% for day in days %}
+                            <th>{{ day|date:"d.m" }}<br>{{ day|date:"D" }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <td>{{ employee.first_name }} {{ employee.last_name }}</td>
+                        {% for day in days %}
+                            <td class="text-center">
+                                <input type="checkbox" name="timeoff_{{ employee.id }}_{{ day|date:"Y-m-d" }}"
+                                    {% if day in employee_days_off|get_item:employee.id %} checked {% endif %}>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{{ days|length|add:1 }}" class="text-center">Нет сотрудников</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+        </div>
+    </div>
+</form>
+
+{% include 'sheduler/tail.html' %}

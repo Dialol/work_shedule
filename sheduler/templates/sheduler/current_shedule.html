@@ -1,0 +1,48 @@
+{% include 'sheduler/head.html' %}
+{% include 'sheduler/navbar.html' %}
+
+<h2 class="mb-4">Текущее расписание</h2>
+
+<div class="card mb-4">
+    <div class="card-header">
+        Неделя: {{ start_of_week|date:"d.m.Y" }} - {{ end_of_week|date:"d.m.Y" }}
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Сотрудник</th>
+                    <th>Пн</th> 
+                    <th>Вт</th>
+                    <th>Ср</th>
+                    <th>Чт</th>
+                    <th>Пт</th>
+                    <th>Сб</th>
+                    <th>Вс</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                <tr>
+                    <td>{{ employee.first_name }} {{ employee.last_name }}</td>
+                    {% for day, day_shifts in shifts_by_day.items %}
+                        <td>
+                            {% for shift in day_shifts %}
+                                {% if shift.employee.id == employee.id %}
+                                    ✓
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">Нет сотрудников</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include 'sheduler/tail.html' %}

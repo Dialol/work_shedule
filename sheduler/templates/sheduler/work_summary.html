@@ -1,0 +1,38 @@
+{% include 'sheduler/head.html' %}
+{% include 'sheduler/navbar.html' %}
+
+<h2 class="mb-4">Итоги работы</h2>
+
+<div class="card mb-4">
+    <div class="card-header">
+        Отработанные смены по месяцам
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Сотрудник</th>
+                    <th>Месяц</th>
+                    <th>Количество смен</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for summary in summaries %}
+                <tr>
+                    <td>{{ summary.employee.first_name }} {{ summary.employee.last_name }}</td>
+                    <td>{{ summary.month|date:"F Y" }}</td>
+                    <td>{{ summary.shift_count }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center">Нет данных о работе</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include 'sheduler/tail.html' %}
+
+
