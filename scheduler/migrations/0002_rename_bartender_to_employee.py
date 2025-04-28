@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sheduler', '0001_initial'),
+        ('scheduler', '0001_initial'),
     ]
 
     operations = [
@@ -30,19 +30,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='desiredtimeoff',
             name='employee',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='desired_time_off', to='sheduler.employee', verbose_name='Работник'),
+            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='desired_time_off', to='scheduler.employee', verbose_name='Работник'),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='shift',
             name='employee',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='shifts', to='sheduler.employee', verbose_name='Работник'),
+            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='shifts', to='scheduler.employee', verbose_name='Работник'),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='worksummary',
             name='employee',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='work_summaries', to='sheduler.employee', verbose_name='Работник'),
+            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='work_summaries', to='scheduler.employee', verbose_name='Работник'),
             preserve_default=False,
         ),
         migrations.RemoveField(

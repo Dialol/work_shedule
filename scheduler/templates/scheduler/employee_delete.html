@@ -1,0 +1,32 @@
+{% include 'scheduler/head.html' %}
+{% include 'scheduler/navbar.html' %}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Удаление сотрудника</h2>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="employeeSelect" class="form-label">Выберите сотрудника</label>
+                    <select class="form-select" id="employeeSelect" name="employee_id">
+                        {% for employee in employees %}
+                            <option value="{{ employee.id }}">
+                                {{ employee.last_name }} {{ employee.first_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Удалить
+                </button>
+                <a href="{% url 'scheduler:current_schedule' %}" class="btn btn-secondary">
+                    <i class="bi bi-x"></i> Отмена
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% include 'scheduler/tail.html' %}

@@ -1,12 +1,19 @@
-from django.shortcuts import render
+import datetime
+
+from django.utils import timezone
+from django.shortcuts import (
+        render,
+        get_object_or_404,
+        redirect
+        )
 from .models import (
         Employee,
         Shift,
         WorkSummary,
         DesiredTimeOff
         )
-from django.utils import timezone
-import datetime
+
+from .forms import EmployeeForm
 
 
 def get_week_range(date=None, next_week=False):
@@ -42,10 +49,10 @@ def index(request):
     """
     Главная страница с навигацией
     """
-    return render(request, 'sheduler/index.html')
+    return render(request, 'scheduler/index.html')
 
 
-def current_shedule(request):
+def current_schedule(request):
     """
     Текущий график работы
     """
@@ -65,10 +72,10 @@ def current_shedule(request):
         'end_of_week': end_of_week,
         'employees': employees,
     }
-    return render(request, 'sheduler/current_shedule.html', context)
+    return render(request, 'scheduler/current_schedule.html', context)
 
 
-def desired_shedule(request):
+def desired_schedule(request):
     """
     Форма для ввода желаемых выходных
     """
@@ -110,7 +117,7 @@ def desired_shedule(request):
             'end_of_week': end_of_week,
             }
 
-    return render(request, 'sheduler/desired_shedule.html', context)
+    return render(request, 'scheduler/desired_schedule.html', context)
 
 
 def work_summary(request):
@@ -124,4 +131,44 @@ def work_summary(request):
         'employees': employees,
         'summaries': summaries,
     }
-    return render(request, 'sheduler/work_summary.html', context)
+    return render(request, 'scheduler/work_summary.html', context)
+
+
+def employee_form(request, employee_id=None):
+    """
+    Создания и редактирования сотрудника.
+    """
+    if employee_id:
+        employee = get_object_or_404(Employee, id=employee_id)
+    else:
+        employee = None
+
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, instance=employee)
+        if form.is_valid():
+            form.save()
+            return redirect('scheduler:current_schedule')
+    else:
+        form = EmployeeForm(instance=employee)
+
+    return render(request, 'scheduler/employee_form.html', {
+        'form': form,
+        'employee': employee
+        })
+
+
+def employee_delete(request):
+    """
+    Удаление сотрудника
+    """
+    if request.method == 'POST':
+        employee_id = request.POST.get('employee_id')
+        employee = get_object_or_404(Employee, id=employee_id)
+        employee.delete()
+        return redirect('scheduler:current_schedule')
+        
+    employees = Employee.objects.all().order_by('last_name', 'first_name')
+    return render(request, 'scheduler/employee_delete.html', {
+        'employees': employees
+    })
+
