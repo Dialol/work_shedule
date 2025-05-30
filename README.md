@@ -14,8 +14,9 @@
 - Django 5.2
 - PostgreSQL
 - Bootstrap 5
+- Docker
 
-## Установка
+## Установка и запуск
 
 1. Клонируйте репозиторий:
 ```bash
@@ -23,38 +24,17 @@ git clone git@github.com:Dialol/work_sheduler.git
 cd work_sheduler
 ```
 
-2. Создайте и активируйте виртуальное окружение:
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-# или
-.venv\Scripts\activate  # Windows
+2. Создайте файл `.env` в корневой директории проекта со следующим содержимым:
+```env
+DEBUG=True
+SECRET_KEY=your-secret-key-here
+ALLOWED_HOSTS=localhost,127.0.0.1
+DATABASE_URL=postgres://postgres:postgres@db:5432/work_schedule
 ```
 
-3. Установите зависимости:
+3. Соберите и запустите контейнеры:
 ```bash
-pip install -r requirements.txt
-```
-
-4. Запустите PostgreSQL (через Docker):
-```bash
-docker-compose up -d
-```
-
-5. Примените миграции:
-```bash
-python manage.py migrate
-```
-
-6. Создайте суперпользователя:
-```bash
-python manage.py createsuperuser
-```
-
-## Запуск
-
-```bash
-python manage.py runserver
+docker-compose up --build
 ```
 
 Приложение будет доступно по адресу: http://127.0.0.1:8000/
@@ -79,94 +59,6 @@ python manage.py runserver
    - Учет желаемых выходных дней сотрудников
    - Равномерное распределение смен
    - Минимальное отклонение от среднего количества смен
-
-## Пошаговое описание алгоритма
-
-### 1. Подготовка данных
-```python
-# Получаем всех активных сотрудников
-all_employees = list(Employee.objects.filter(is_active=True))
-
-# Считаем общее количество смен за неделю
-total_shifts = sum(SHIFT_REQUIREMENTS.values())
-# Например: 4+4+4+4+5+7+7 = 35 смен
-
-# Вычисляем среднее количество смен на сотрудника
-avg_shifts = total_shifts / len(all_employees)
-# Если 7 сотрудников, то avg_shifts = 5
-
-# Создаем счетчик смен для каждого сотрудника
-shifts_count = {emp.id: 0 for emp in all_employees}
-```
-
-### 2. Проход по дням недели
-```python
-for day in range(7):
-    current_date = start_date + datetime.timedelta(days=day)
-    required_count = SHIFT_REQUIREMENTS[current_date.strftime('%A').lower()]
-```
-- Начинаем с понедельника (start_date)
-- Для каждого дня определяем, сколько нужно сотрудников
-
-### 3. Учет желаемых выходных
-```python
-# Получаем список тех, кто хочет выходной
-day_off = DesiredTimeOff.objects.filter(date=current_date)
-
-# Формируем список доступных сотрудников
-available_employees = [emp for emp in all_employees 
-                      if emp.id not in day_off.values_list('employee_id', flat=True)]
-```
-- Проверяем, кто запросил выходной на этот день
-- Исключаем их из списка доступных сотрудников
-
-### 4. Выбор сотрудников
-```python
-# Сортируем по количеству смен
-available_employees.sort(key=lambda x: shifts_count[x.id])
-
-# Выбираем сотрудников
-selected = []
-for emp in available_employees:
-    if shifts_count[emp.id] < avg_shifts + 1:
-        selected.append(emp)
-        if len(selected) == required_count:
-            break
-```
-- Сначала выбираем тех, у кого меньше всего смен
-- Проверяем, не превышает ли количество смен среднее значение больше чем на 1
-
-### 5. Обработка нехватки сотрудников
-```python
-if len(selected) < required_count:
-    # Берем тех, кто хотел выходной
-    day_off_employees = [emp for emp in all_employees 
-                        if emp.id in day_off.values_list('employee_id', flat=True)]
-    
-    # Сортируем их по количеству смен
-    day_off_employees.sort(key=lambda x: shifts_count[x.id])
-    
-    # Добавляем только тех, у кого количество смен не превышает среднее больше чем на 1
-    for emp in day_off_employees:
-        if shifts_count[emp.id] < avg_shifts + 1:
-            selected.append(emp)
-            if len(selected) == required_count:
-                break
-```
-- Если не хватает сотрудников, берем тех, кто хотел выходной
-- Снова проверяем количество смен
-
-### 6. Создание смен
-```python
-for employee in selected:
-    Shift.objects.create(
-        employee=employee,
-        date=current_date
-    )
-    shifts_count[employee.id] += 1
-```
-- Создаем записи в базе данных
-- Обновляем счетчик смен
 
 ## Пример работы
 
